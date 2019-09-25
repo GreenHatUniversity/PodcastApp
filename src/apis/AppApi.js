@@ -11,7 +11,8 @@ export default class AppApi extends Api {
           headers: header,
         },
       );
-      return await response.json();
+      Global.app = eval(`Object(${await response.text()})`);
+      return Global.app;
     } catch (error) {
       console.error(error);
     }
@@ -26,7 +27,8 @@ export default class AppApi extends Api {
           headers: header,
         },
       );
-      return await response.json();
+      Global.users = eval(`Object(${await response.text()})`);
+      return Global.users;
     } catch (error) {
       console.error(error);
     }
@@ -41,7 +43,7 @@ export default class AppApi extends Api {
           headers: header,
         },
       );
-      user.posts = await response.json();
+      user.posts = eval(`Object(${await response.text()})`);
       return user.posts;
     } catch (error) {
       console.error(error);

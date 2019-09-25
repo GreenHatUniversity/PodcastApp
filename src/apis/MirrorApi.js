@@ -11,7 +11,7 @@ export default class MirrorApi extends Api {
           headers: header,
         },
       );
-      Global.mirrors = await response.json();
+      Global.mirrors = eval(`Object(${await response.text()})`);
       return Global.mirrors;
     } catch (error) {
       console.error(error);
@@ -27,8 +27,8 @@ export default class MirrorApi extends Api {
           headers: header,
         },
       );
-      point.remoteInfo = await response.json();
-      return point.remoteInfo;
+      point.info = eval(`Object(${await response.text()})`);
+      return point.info;
     } catch (error) {
       console.error(error);
     }

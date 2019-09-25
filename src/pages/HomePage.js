@@ -13,19 +13,34 @@ import {
 
 import Sound from 'react-native-sound';
 
+import AppApi from '../apis/AppApi';
+
 export default class HomePage extends React.Component {
   constructor(props) {
     super(props);
     Sound.setCategory('Playback');
+    this.state = {
+      appInfo: {
+        notice: '',
+      },
+      dataSource: [],
+    };
   }
 
-  renderRow(item) {
+  async componentDidMount() {
+    // eslint-disable-next-line react/no-did-mount-set-state
+    this.setState({appInfo: await AppApi.appApi()});
+    // eslint-disable-next-line react/no-did-mount-set-state
+    this.setState({dataSource: (await AppApi.usersApi()).users});
+  }
+
+  renderItem(item) {
     return (
-      <View style={styles.row}>
+      <View style={styles.item}>
         <TouchableOpacity onPress={() => {}}>
           <Image src={item.icon} />
           <Text style={styles.text1}>姓名：{item.name}</Text>
-          <Text style={styles.text2}>总数：{item.postCount}</Text>
+          <Text style={styles.text2}>总数：{item.count}</Text>
           <Text style={styles.text3}>最后更新时间：{item.updateTime}</Text>
         </TouchableOpacity>
       </View>
@@ -41,12 +56,17 @@ export default class HomePage extends React.Component {
             contentInsetAdjustmentBehavior="automatic"
             style={styles.scrollView}>
             <View style={styles.header}>
-              <Text style={styles.notice} />
-              <Text style={styles.description} />
-              <Text style={styles.details} />
+              <Text style={styles.notice}>{this.state.appInfo.notice}</Text>
+              <Text style={styles.description}>
+                {this.state.appInfo.description}
+              </Text>
             </View>
             <View style={styles.body}>
-              <FlatList renderItem={({item}) => this.renderRow(item)} />
+              <FlatList
+                style={styles.list}
+                data={this.state.dataSource}
+                renderItem={({item}) => this.renderItem(item)}
+              />
             </View>
           </ScrollView>
         </SafeAreaView>
@@ -58,38 +78,20 @@ export default class HomePage extends React.Component {
 const styles = StyleSheet.create({
   scrollView: {
     backgroundColor: '#ffffff',
+    flex: 1,
   },
-  engine: {
-    position: 'absolute',
-    right: 0,
+  header: {
+    marginTop: 8,
+    marginHorizontal: 8,
   },
   body: {
-    backgroundColor: '#ffffff',
-  },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  sectionDescription: {
     marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: '#000000',
+    marginHorizontal: 8,
+    backgroundColor: '#ffffff',
+    flex: 1,
   },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: '#000000',
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
+  list: {
+    flexDirection: 'row',
+    flex: 1,
   },
 });

@@ -1,6 +1,6 @@
 export const header = {
-  Accept: 'application/json',
-  'Content-Type': 'application/json',
+  Accept: 'application/text',
+  'Content-Type': 'application/text',
 };
 
 export default class Api {
