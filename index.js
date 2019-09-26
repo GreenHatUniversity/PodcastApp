@@ -1,5 +1,5 @@
 /**
- * @format
+ * Design from: https://dribbble.com/shots/4916044--Exploration-Podcast-App
  */
 
 import {AppRegistry} from 'react-native';
