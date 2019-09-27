@@ -4,7 +4,7 @@ export default class AppApi {
   static async appApi() {
     try {
       let response = await fetch(
-        Global.pathJoin(Global.apiAddress, 'app.json'),
+        Global.pathJoin(Global.apiAddress(), 'app.json'),
         {
           method: 'GET',
           headers: Global.httpRequestHeader,
@@ -20,7 +20,7 @@ export default class AppApi {
   static async usersApi() {
     try {
       let response = await fetch(
-        Global.pathJoin(Global.apiAddress, 'users.json'),
+        Global.pathJoin(Global.apiAddress(), 'users.json'),
         {
           method: 'GET',
           headers: Global.httpRequestHeader,
@@ -36,7 +36,7 @@ export default class AppApi {
   static async albumsApi(user) {
     try {
       let response = await fetch(
-        Global.pathJoin(Global.apiAddress, `albums/${user.userId}.json`),
+        Global.pathJoin(Global.apiAddress(), `albums/${user.userId}.json`),
         {
           method: 'GET',
           headers: Global.httpRequestHeader,
@@ -52,7 +52,7 @@ export default class AppApi {
   static async postsApi(user) {
     try {
       let response = await fetch(
-        Global.pathJoin(Global.apiAddress, `posts/${user.userId}.json`),
+        Global.pathJoin(Global.apiAddress(), `posts/${user.userId}.json`),
         {
           method: 'GET',
           headers: Global.httpRequestHeader,

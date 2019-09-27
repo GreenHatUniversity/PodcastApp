@@ -4,7 +4,7 @@ export default class MirrorApi {
   static async mirrorsApi() {
     try {
       let response = await fetch(
-        Global.pathJoin(Global.apiAddress, 'mirrors.json'),
+        Global.pathJoin(Global.apiAddress(), 'mirrors.json'),
         {
           method: 'GET',
           headers: Global.httpRequestHeader,
