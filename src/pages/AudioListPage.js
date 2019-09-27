@@ -10,64 +10,31 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome5';
+import Icon from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
 
 import Global from '../../Global';
+import AppApi from '../apis/AppApi';
 
 export default class AudioListPage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      dataSource: [
-        {
-          title:
-            '213. 德州仪器: 开拓硅晶体管的先驱, 213. 德州仪器: 开拓硅晶体管的先驱1',
-          time: 3000,
-        },
-        {
-          title: '213. 德州仪器: 开拓硅晶体管的先驱2',
-          time: 3000,
-        },
-        {
-          title:
-            '213. 德州仪器: 开拓硅晶体管的先驱, 213. 德州仪器: 开拓硅晶体管的先驱3',
-          time: 3000,
-        },
-        {
-          title: '213. 德州仪器: 开拓硅晶体管的先驱4',
-          time: 3000,
-        },
-        {
-          title:
-            '213. 德州仪器: 开拓硅晶体管的先驱, 213. 德州仪器: 开拓硅晶体管的先驱5',
-          time: 3000,
-        },
-        {
-          title: '213. 德州仪器: 开拓硅晶体管的先驱6',
-          time: 3000,
-        },
-        {
-          title:
-            '213. 德州仪器: 开拓硅晶体管的先驱, 213. 德州仪器: 开拓硅晶体管的先驱7',
-          time: 3000,
-        },
-        {
-          title: '213. 德州仪器: 开拓硅晶体管的先驱8',
-          time: 3000,
-        },
-        {
-          title:
-            '213. 德州仪器: 开拓硅晶体管的先驱, 213. 德州仪器: 开拓硅晶体管的先驱9',
-          time: 3000,
-        },
-        {
-          title: '213. 德州仪器: 开拓硅晶体管的先驱0',
-          time: 3000,
-        },
-      ],
+      user: null,
+      dataSource: [],
       itemSelected: null,
     };
+  }
+
+  componentDidMount() {
+    AppApi.appApi().then(() => {
+      AppApi.usersApi().then(value => {
+        this.setState({user: value.data[0]});
+        AppApi.postsApi(this.state.user).then(value => {
+          this.setState({dataSource: value.data});
+        });
+      });
+    });
   }
 
   renderItem(item) {
@@ -128,39 +95,38 @@ export default class AudioListPage extends React.Component {
           <ScrollView
             contentInsetAdjustmentBehavior="automatic"
             style={styles.scrollView}>
-            <View style={styles.header}>
-              <Text style={styles.title}>
-                《软件那些事儿》213. 德州仪器: 开拓硅晶体管的先驱
-              </Text>
-              <View style={styles.userRow}>
-                <View style={styles.userInfo}>
-                  <Image
-                    source={{
-                      uri: Global.imagePath(
-                        'wKgJo1p-6_-yMyjuAAj66HVMFrY586.png',
-                        'liudongliang',
-                      ),
-                    }}
-                    style={styles.avatar}
+            {this.state.user ? (
+              <View style={styles.header}>
+                <Text style={styles.title}>{this.state.user.description}</Text>
+                <View style={styles.userRow}>
+                  <View style={styles.userInfo}>
+                    <Image
+                      source={{
+                        uri: Global.userAvatarUrl(this.state.user),
+                      }}
+                      style={styles.avatar}
+                    />
+                    <Text style={styles.name}>{this.state.user.name}</Text>
+                  </View>
+                  <Icon
+                    name={'play-circle'}
+                    color={Global.themeColor}
+                    size={70}
+                    style={styles.play}
                   />
-                  <Text style={styles.name}>刘延栋</Text>
                 </View>
-                <Icon
-                  name={'play-circle'}
-                  color={Global.themeColor}
-                  size={70}
-                  style={styles.play}
+              </View>
+            ) : null}
+            {this.state.dataSource.length ? (
+              <View style={styles.body}>
+                <FlatList
+                  style={styles.flatList}
+                  data={this.state.dataSource}
+                  renderItem={({item}) => this.renderItem(item)}
+                  ItemSeparatorComponent={() => <View />}
                 />
               </View>
-            </View>
-            <View style={styles.body}>
-              <FlatList
-                style={styles.flatList}
-                data={this.state.dataSource}
-                renderItem={({item}) => this.renderItem(item)}
-                ItemSeparatorComponent={() => <View />}
-              />
-            </View>
+            ) : null}
           </ScrollView>
         </SafeAreaView>
       </Fragment>
@@ -198,6 +164,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 16,
+    fontWeight: '500',
     color: '#222222',
     marginLeft: 8,
   },
@@ -209,6 +176,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
+    fontWeight: 'bold',
     marginRight: 90,
     color: '#333333',
   },
@@ -226,6 +194,7 @@ const styles = StyleSheet.create({
   itemTitle: {
     color: '#333333',
     fontSize: 16,
+    fontWeight: '500',
     lineHeight: 30,
     paddingRight: 48,
     flex: 1,

@@ -5328,6 +5328,11 @@ react-navigation-stack@^1.9.0:
   dependencies:
     prop-types "^15.7.2"
 
+react-navigation-transitions@^1.0.12:
+  version "1.0.12"
+  resolved "http://r.cnpmjs.org/react-navigation-transitions/download/react-navigation-transitions-1.0.12.tgz#7307668bc7d5fdbdc1954224e7891f7fe6cb5f74"
+  integrity sha1-cwdmi8fV/b3BlUIk54kff+bLX3Q=
+
 react-navigation@^4.0.8:
   version "4.0.8"
   resolved "http://r.cnpmjs.org/react-navigation/download/react-navigation-4.0.8.tgz#84958783ba232d2c8cb60f265c403ee50fc4f7bd"

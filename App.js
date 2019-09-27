@@ -1,6 +1,7 @@
 import React from 'react';
 import {createAppContainer} from 'react-navigation';
 import {createStackNavigator} from 'react-navigation-stack';
+import {fromBottom} from 'react-navigation-transitions';
 import HomePage from './src/pages/HomePage';
 import AudioListPage from './src/pages/AudioListPage';
 import PlayerPage from './src/pages/PlayerPage';
@@ -32,7 +33,8 @@ const AppStackNavigator = createStackNavigator(
     },
   },
   {
-    initialRouteName: 'Player',
+    initialRouteName: 'AudioList',
+    transitionConfig: () => fromBottom(),
   },
 );
 
