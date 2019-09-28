@@ -9,11 +9,12 @@ import {
   FlatList,
   Image,
   TouchableOpacity,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
 
-import Global from '../../Global';
+import Global, {Player} from '../../Global';
 import AppApi from '../apis/AppApi';
 
 export default class AudioListPage extends React.Component {
@@ -21,8 +22,13 @@ export default class AudioListPage extends React.Component {
     super(props);
     this.state = {
       user: null,
+      album: null,
       dataSource: [],
       itemSelected: null,
+
+      playState: 'paused', //playing, paused
+      playSeconds: 0,
+      duration: 0,
     };
   }
 
@@ -34,6 +40,14 @@ export default class AudioListPage extends React.Component {
           this.setState({dataSource: value.data});
         });
       });
+      Global.player = new Player(
+        state => {
+          this.setState({state: state});
+        },
+        seconds => {
+          this.setState({playSeconds: seconds});
+        },
+      );
     });
   }
 
@@ -59,10 +73,14 @@ export default class AudioListPage extends React.Component {
             styles.item,
             isSelected ? {borderLeftColor: Global.themeColor} : null,
           ]}
-          onPress={() => {
+          onPress={async () => {
             this.setState({itemSelected: item});
+            await Global.player.play(
+              Global.postAudioUrl(this.state.user, item),
+            );
           }}>
           <Text
+            numberOfLines={2}
             style={[
               styles.itemTitle,
               isSelected ? {color: Global.themeColor} : null,
@@ -74,7 +92,7 @@ export default class AudioListPage extends React.Component {
               styles.itemTime,
               isSelected ? {color: Global.themeColor} : null,
             ]}>
-            {item.time}
+            {Global.audioTimeString(item.timeLength)}
           </Text>
         </TouchableOpacity>
         <LinearGradient
@@ -109,7 +127,11 @@ export default class AudioListPage extends React.Component {
                     <Text style={styles.name}>{this.state.user.name}</Text>
                   </View>
                   <Icon
-                    name={'play-circle'}
+                    name={
+                      this.state.state === 'playing'
+                        ? 'pause-circle'
+                        : 'play-circle'
+                    }
                     color={Global.themeColor}
                     size={70}
                     style={styles.play}
@@ -128,6 +150,42 @@ export default class AudioListPage extends React.Component {
               </View>
             ) : null}
           </ScrollView>
+          {this.state.itemSelected ? (
+            <View style={styles.footer}>
+              <TouchableWithoutFeedback>
+                <Icon name={'chevron-up'} size={26} color={'#000'} />
+              </TouchableWithoutFeedback>
+              <View style={styles.userContainer}>
+                <Image
+                  source={{
+                    uri: Global.userAvatarUrl(this.state.user),
+                  }}
+                  style={styles.avatar}
+                />
+                <View style={{marginLeft: 8, marginRight: 40}}>
+                  <Text
+                    numberOfLines={1}
+                    style={{color: '#333333', fontWeight: '500'}}>
+                    {this.state.itemSelected.title}
+                  </Text>
+                  <Text style={{color: '#999999', fontWeight: '500'}}>
+                    {this.state.user.name}
+                  </Text>
+                </View>
+              </View>
+              <TouchableWithoutFeedback>
+                <Icon
+                  name={
+                    this.state.state === 'playing'
+                      ? 'pause-circle'
+                      : 'play-circle'
+                  }
+                  size={42}
+                  color={Global.themeColor}
+                />
+              </TouchableWithoutFeedback>
+            </View>
+          ) : null}
         </SafeAreaView>
       </Fragment>
     );
@@ -207,5 +265,19 @@ const styles = StyleSheet.create({
   separator: {
     height: 0.5,
     marginHorizontal: 26,
+  },
+  footer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 26,
+    justifyContent: 'space-between',
+    borderTopWidth: 0.5,
+    borderTopColor: '#e3e3e3',
+  },
+  userContainer: {
+    marginHorizontal: 12,
+    flexDirection: 'row',
+    flex: 1,
   },
 });
