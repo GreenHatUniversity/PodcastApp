@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
+import * as Progress from 'react-native-progress';
 
 import Global, {Player} from '../../Global';
 import AppApi from '../apis/AppApi';
@@ -125,8 +126,12 @@ export default class AudioListPage extends React.Component {
             if (item === this.state.post) {
               this.pushPlayer();
             } else {
-              this.setState({post: item});
-              this.play(item);
+              this.setState({post: item, isLoading: true});
+              this.play(item, (post, error) => {
+                if (!error) {
+                  this.setState({isLoading: false});
+                }
+              });
             }
           }}>
           <Text
@@ -206,12 +211,32 @@ export default class AudioListPage extends React.Component {
                 <Icon name={'chevron-up'} size={26} color={'#000'} />
               </TouchableWithoutFeedback>
               <View style={styles.userContainer}>
-                <Image
-                  source={{
-                    uri: Global.userAvatarUrl(this.state.user),
-                  }}
-                  style={styles.avatar}
-                />
+                <View style={{width: 38}}>
+                  <Image
+                    source={{
+                      uri: Global.userAvatarUrl(this.state.user),
+                    }}
+                    style={[styles.avatar, styles.position, styles.avatar2]}
+                  />
+                  {this.state.isLoading ? (
+                    <Progress.CircleSnail
+                      color={Global.themeColor}
+                      size={44}
+                      // 这个通过改源码添加的属性
+                      offset={{top: 0, left: 0}}
+                      style={styles.position}
+                    />
+                  ) : (
+                    <Progress.Circle
+                      color={Global.themeColor}
+                      unfilledColor={'#E7F7F7'}
+                      borderColor={'#E7F7F7'}
+                      progress={this.state.seconds / this.state.post.duration}
+                      size={38}
+                      style={styles.position}
+                    />
+                  )}
+                </View>
                 <View style={{marginLeft: 8, marginRight: 40}}>
                   <Text
                     numberOfLines={1}
@@ -272,6 +297,17 @@ const styles = StyleSheet.create({
     borderRadius: 38 / 2.0,
     borderWidth: 0.5,
     borderColor: Global.themeColor,
+  },
+  avatar2: {
+    borderWidth: 5,
+    borderColor: '#E7F7F7',
+  },
+  position: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
   },
   name: {
     fontSize: 16,
