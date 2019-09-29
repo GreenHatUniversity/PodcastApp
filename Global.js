@@ -1,34 +1,36 @@
 import Sound from 'react-native-sound';
+const urljoin = require('url-join');
 
 export class Player {
-  playState = 'paused'; //playing, paused
-  playTime = 0;
+  static EventTime = 'EventTime';
+  static EventState = 'EventState';
+
+  static PlayPlaying = 'PlayPlaying';
+  static PlayPaused = 'PlayPaused';
+  static PlayEnd = 'PlayEnd';
+  static PlayError = 'PlayError';
+
+  state = Player.PlayPaused;
+  time = 0;
   duration = 0;
-  _currentTimeCallback = null;
-  _currentStateCallback = null;
+  _eventList = {};
   /** @type Sound */
   _sound = null;
-  _sliderEditing = false;
   _timeout = setInterval(() => {
     if (
       this._sound &&
       this._sound.isLoaded() &&
-      this.playState === 'playing' &&
-      !this._sliderEditing
+      this.state === Player.PlayPlaying
     ) {
       this._sound.getCurrentTime((seconds, isPlaying) => {
-        this.playTime = seconds;
-        if (this._currentTimeCallback) {
-          this._currentTimeCallback(seconds);
-        }
+        this.time = seconds;
+        this.emitTimeEvent();
       });
     }
-  }, 100);
+  }, 200);
 
-  constructor(currentStateCallback, currentTimeCallback) {
+  constructor() {
     Sound.setCategory('Playback', true);
-    this._currentTimeCallback = currentTimeCallback;
-    this._currentStateCallback = currentStateCallback;
   }
 
   desctructor() {
@@ -41,26 +43,73 @@ export class Player {
     }
   }
 
-  async play(filepath) {
-    filepath = encodeURI(filepath);
+  removeA(arr, ...a) {
+    let what,
+      L = a.length,
+      ax;
+    while (L > 0 && arr.length) {
+      what = a[--L];
+      while ((ax = arr.indexOf(what)) !== -1) {
+        arr.splice(ax, 1);
+      }
+    }
+    return arr;
+  }
+
+  removeEventListener(name, cb) {
+    if (this._eventList.hasOwnProperty(name)) {
+      this.removeA(this._eventList[name], cb);
+    }
+  }
+
+  addEventListener(name, cb) {
+    if (this._eventList.hasOwnProperty(name)) {
+      this._eventList[name].push(cb);
+    } else {
+      this._eventList[name] = [cb];
+    }
+  }
+
+  emitTimeEvent() {
+    if (this._eventList.hasOwnProperty(Player.EventTime)) {
+      for (let i = 0; i < this._eventList[Player.EventTime].length; i++) {
+        const cb = this._eventList[Player.EventTime][i];
+        try {
+          cb(this.time);
+        } catch (e) {
+          console.log(e);
+        }
+      }
+    }
+  }
+
+  emitStateEvent() {
+    if (this._eventList.hasOwnProperty(Player.EventState)) {
+      for (let i = 0; i < this._eventList[Player.EventState].length; i++) {
+        const cb = this._eventList[Player.EventState][i];
+        try {
+          cb(this.state);
+        } catch (e) {
+          console.log(e);
+        }
+      }
+    }
+  }
+
+  async play(filepath, cb) {
     if (this._sound) {
       this._sound.release();
-      this.playState = 'paused';
-      if (this._currentStateCallback) {
-        this._currentStateCallback(this.playState);
-      }
     }
     this._sound = new Sound(filepath, '', error => {
       if (error) {
-        this.playState = 'paused';
+        this.state = Player.PlayError;
       } else {
-        this.playState = 'playing';
+        this.state = Player.PlayPlaying;
         this.duration = this._sound.getDuration();
         this._sound.play(this.playComplete);
       }
-      if (this._currentStateCallback) {
-        this._currentStateCallback(this.playState);
-      }
+      this.emitStateEvent();
+      cb(error);
     });
   }
 
@@ -71,23 +120,28 @@ export class Player {
       } else {
         console.log('playback failed due to audio decoding errors');
       }
-      this.playState = 'paused';
-      this.playTime = 0;
+      this.state = Player.PlayEnd;
+      this.time = 0;
       this._sound.setCurrentTime(0);
-      if (this._currentStateCallback) {
-        this._currentStateCallback(this.playState);
-      }
+      this.emitStateEvent();
     }
   };
 
   pause() {
     if (this._sound) {
-      this._sound.pause();
+      if (this.state === Player.PlayPlaying) {
+        this._sound.pause();
+        this.state = Player.PlayPaused;
+      } else {
+        this._sound.play(this.playComplete);
+        this.state = Player.PlayPlaying;
+      }
     }
-    this.playState = 'paused';
-    if (this._currentStateCallback) {
-      this._currentStateCallback(this.playState);
-    }
+    this.emitStateEvent();
+  }
+
+  jumpToTime(time) {
+    this._sound.setCurrentTime(time);
   }
 
   jumpSeconds = secsDelta => {
@@ -100,7 +154,7 @@ export class Player {
           nextSecs = this.duration;
         }
         this._sound.setCurrentTime(nextSecs);
-        this.playTime = nextSecs;
+        this.time = nextSecs;
       });
     }
   };
@@ -124,7 +178,7 @@ export default class Global {
   static setPoint = point => (this._point = point);
 
   /** @type Player */
-  static player = null;
+  static player = new Player();
 
   static httpRequestHeader = {
     Accept: 'application/text',
@@ -132,9 +186,8 @@ export default class Global {
   };
 
   static pathJoin = (...paths) => {
-    const sep = '/';
-    const replace = new RegExp(sep + '{1,}', 'g');
-    return paths.join(sep).replace(replace, sep);
+    const url = urljoin(...paths);
+    return url;
   };
 
   static audioTimeString(seconds) {
@@ -159,6 +212,7 @@ export default class Global {
     } else {
       return this.pathJoin(
         this.point().postsRepo[post.postsRepo],
+        user.userId,
         'image',
         post.icon,
       );

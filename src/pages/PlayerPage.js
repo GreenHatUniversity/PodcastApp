@@ -8,31 +8,49 @@ import {
   TouchableWithoutFeedback,
   Image,
 } from 'react-native';
-import Sound from 'react-native-sound';
 import Icon from 'react-native-vector-icons/Feather';
 import Slider from '@react-native-community/slider';
 import LinearGradient from 'react-native-linear-gradient';
-import Global from '../../Global';
+import Global, {Player} from '../../Global';
 import slider from '../resources/slider.png';
 
 export default class PlayerPage extends React.Component {
   constructor(props) {
     super(props);
-    Sound.setCategory('Playback');
+    this.parentPage = this.props.navigation.getParam('parentPage');
     this.state = {
-      appInfo: {
-        notice: '',
-      },
-      dataSource: [],
+      user: this.props.navigation.getParam('user'),
+      album: this.props.navigation.getParam('album'),
+      post: this.props.navigation.getParam('post'),
+
+      state: this.props.navigation.getParam('state'),
+      seconds: 0,
+      duration: 0,
+
+      isLoading: false,
     };
   }
-  //
-  // async componentDidMount() {
-  //   // eslint-disable-next-line react/no-did-mount-set-state
-  //   this.setState({appInfo: await AppApi.appApi()});
-  //   // eslint-disable-next-line react/no-did-mount-set-state
-  //   this.setState({dataSource: (await AppApi.usersApi()).users});
-  // }
+
+  componentDidMount() {
+    Global.player.addEventListener(Player.EventState, state => {
+      this.setState({state: state});
+      if (state === Player.PlayEnd) {
+        const posts = this.state.user.posts.data;
+        const index = posts.indexOf(this.state.post);
+        if (index + 1 === posts.length) {
+          return;
+        }
+        this.setState({isLoading: true, post: posts[index + 1]});
+      } else if (state === Player.PlayPlaying) {
+        this.setState({isLoading: false});
+      } else if (state === Player.PlayError) {
+        this.setState({isLoading: false});
+      }
+    });
+    Global.player.addEventListener(Player.EventTime, seconds => {
+      this.setState({seconds: seconds, duration: Global.player.duration});
+    });
+  }
 
   render() {
     return (
@@ -40,63 +58,90 @@ export default class PlayerPage extends React.Component {
         <StatusBar barStyle="dark-content" />
         <SafeAreaView style={styles.safeAreaView}>
           <View style={styles.navigation}>
-            <Icon size={36} name={'chevron-down'} color={'#333333'} />
+            <TouchableWithoutFeedback
+              onPress={() => this.props.navigation.pop()}>
+              <Icon size={36} name={'chevron-down'} color={'#333333'} />
+            </TouchableWithoutFeedback>
           </View>
-          <Text style={styles.title}>
-            213. 德州仪器: 开拓硅晶体管的先驱, 213. 德州仪器:
-            开拓硅晶体管的先驱7
-          </Text>
+          <Text style={styles.title}>{this.state.post.title}</Text>
           <LinearGradient
             colors={['#f1f1f1', '#ffffff']}
             start={{x: 0, y: 0}}
             end={{x: 1, y: 0}}
             style={styles.separator}
           />
-          <Text style={styles.description}>
-            213. 德州仪器: 开拓硅晶体管的先驱, 213. 德州仪器:
-            开拓硅晶体管的先驱7</Text>
+          <Text style={styles.description}>{this.state.post.title}</Text>
           <View style={styles.userInfo}>
             <Image
               source={{
-                uri: Global.imagePath(
-                  'wKgKjFsqBdXTDdNvAABO2sCYFqc203.png',
-                  'liudongliang',
-                ),
+                uri: Global.postIconUrl(this.state.user, this.state.post),
               }}
               style={styles.avatar}
             />
-            <Text style={styles.name}>刘延栋</Text>
+            <Text style={styles.name}>{this.state.user.name}</Text>
           </View>
           <View style={styles.progress}>
-            <Text style={styles.audioTime}>00:00</Text>
+            <Text style={styles.audioTime}>
+              {Global.audioTimeString(this.state.seconds)}
+            </Text>
             <Slider
               style={styles.slider}
+              value={this.state.seconds}
               minimumValue={0}
-              maximumValue={1}
+              maximumValue={this.state.duration}
               minimumTrackTintColor={Global.themeColor}
               maximumTrackTintColor={'#EEEEEE'}
               thumbImage={slider}
+              onValueChange={value => {
+                Global.player.jumpToTime(value);
+              }}
             />
-            <Text style={styles.audioTime}>31:12</Text>
+            <Text style={styles.audioTime}>
+              {Global.audioTimeString(this.state.duration)}
+            </Text>
           </View>
           <View style={styles.control}>
-            <TouchableWithoutFeedback>
+            <TouchableWithoutFeedback
+              onPress={() => Global.player.jumpPrev15Seconds()}>
               <Icon
                 name={'chevrons-left'}
                 size={40}
                 color={Global.themeColor}
               />
             </TouchableWithoutFeedback>
-            <TouchableWithoutFeedback>
+            <TouchableWithoutFeedback
+              onPress={() =>
+                this.parentPage.playLast((post, error) => {
+                  if (!error) {
+                    this.setState({post: post});
+                  }
+                })
+              }>
               <Icon name={'skip-back'} size={30} color={Global.themeColor} />
             </TouchableWithoutFeedback>
-            <TouchableWithoutFeedback>
-              <Icon name={'play-circle'} size={80} color={Global.themeColor} />
+            <TouchableWithoutFeedback onPress={() => Global.player.pause()}>
+              <Icon
+                name={
+                  this.state.state === Player.PlayPlaying
+                    ? 'pause-circle'
+                    : 'play-circle'
+                }
+                size={80}
+                color={Global.themeColor}
+              />
             </TouchableWithoutFeedback>
-            <TouchableWithoutFeedback>
+            <TouchableWithoutFeedback
+              onPress={() =>
+                this.parentPage.playNext((post, error) => {
+                  if (!error) {
+                    this.setState({post: post});
+                  }
+                })
+              }>
               <Icon name={'skip-forward'} size={30} color={Global.themeColor} />
             </TouchableWithoutFeedback>
-            <TouchableWithoutFeedback>
+            <TouchableWithoutFeedback
+              onPress={() => Global.player.jumpNext15Seconds()}>
               <Icon
                 name={'chevrons-right'}
                 size={40}

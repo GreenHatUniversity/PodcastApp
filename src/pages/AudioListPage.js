@@ -23,13 +23,13 @@ export default class AudioListPage extends React.Component {
     this.state = {
       user: null,
       album: null,
+      post: null,
       dataSource: [],
-      itemSelected: null,
 
-      playState: 'paused', //playing, paused
-      playSeconds: 0,
-      duration: 0,
+      state: Player.PlayPaused,
+      seconds: 0,
     };
+    this.duration = 0;
   }
 
   componentDidMount() {
@@ -40,28 +40,76 @@ export default class AudioListPage extends React.Component {
           this.setState({dataSource: value.data});
         });
       });
-      Global.player = new Player(
-        state => {
-          this.setState({state: state});
-        },
-        seconds => {
-          this.setState({playSeconds: seconds});
-        },
-      );
+    });
+
+    Global.player.addEventListener(Player.EventState, state => {
+      this.setState({state: state});
+      if (state === Player.PlayEnd) {
+        this.setState({isLoading: true});
+        this.playNext();
+      } else if (state === Player.PlayPlaying) {
+        this.setState({isLoading: false});
+      } else if (state === Player.PlayError) {
+        this.setState({isLoading: false});
+      }
+    });
+    Global.player.addEventListener(Player.EventTime, seconds => {
+      this.setState({seconds: seconds});
+      this.duration = Global.player.duration;
+      this.state.post.duration = Global.player.duration;
+    });
+  }
+
+  play(post, cb) {
+    Global.player
+      .play(Global.postAudioUrl(this.state.user, post), error => {
+        if (!error && cb) {
+          cb(post);
+        }
+      })
+      .then();
+  }
+
+  playLast(cb) {
+    const index = this.state.dataSource.indexOf(this.state.post);
+    if (index === 0) {
+      cb(null, {message: 'not last'});
+      return;
+    }
+    const post = this.state.dataSource[index - 1];
+    this.setState({post: post});
+    this.play(post, cb);
+  }
+
+  playNext(cb) {
+    const index = this.state.dataSource.indexOf(this.state.post);
+    if (index + 1 === this.state.dataSource.length) {
+      cb(null, {message: 'not next'});
+      return;
+    }
+    const post = this.state.dataSource[index + 1];
+    this.setState({post: post});
+    this.play(post, cb);
+  }
+
+  pushPlayer() {
+    this.props.navigation.navigate('Player', {
+      user: this.state.user,
+      post: this.state.post,
+      album: this.state.album,
+      state: this.state.state,
+      parentPage: this,
     });
   }
 
   renderItem(item) {
     const isSelected =
-      this.state.itemSelected !== null &&
-      this.state.itemSelected.title === item.title;
-    let itemSelectedIndex = this.state.dataSource.indexOf(
-      this.state.itemSelected,
-    );
+      this.state.post !== null && this.state.post.title === item.title;
+    let postIndex = this.state.dataSource.indexOf(this.state.post);
     const isSeparator =
-      (this.state.itemSelected !== null &&
-        this.state.dataSource[itemSelectedIndex > 0 ? itemSelectedIndex - 1 : 0]
-          .title === item.title) ||
+      (this.state.post !== null &&
+        this.state.dataSource[postIndex > 0 ? postIndex - 1 : 0].title ===
+          item.title) ||
       isSelected;
     return (
       <LinearGradient
@@ -73,11 +121,13 @@ export default class AudioListPage extends React.Component {
             styles.item,
             isSelected ? {borderLeftColor: Global.themeColor} : null,
           ]}
-          onPress={async () => {
-            this.setState({itemSelected: item});
-            await Global.player.play(
-              Global.postAudioUrl(this.state.user, item),
-            );
+          onPress={() => {
+            if (item === this.state.post) {
+              this.pushPlayer();
+            } else {
+              this.setState({post: item});
+              this.play(item);
+            }
           }}>
           <Text
             numberOfLines={2}
@@ -92,7 +142,7 @@ export default class AudioListPage extends React.Component {
               styles.itemTime,
               isSelected ? {color: Global.themeColor} : null,
             ]}>
-            {Global.audioTimeString(item.timeLength)}
+            {Global.audioTimeString(item.duration)}
           </Text>
         </TouchableOpacity>
         <LinearGradient
@@ -128,7 +178,7 @@ export default class AudioListPage extends React.Component {
                   </View>
                   <Icon
                     name={
-                      this.state.state === 'playing'
+                      this.state.state === Player.PlayPlaying
                         ? 'pause-circle'
                         : 'play-circle'
                     }
@@ -150,9 +200,9 @@ export default class AudioListPage extends React.Component {
               </View>
             ) : null}
           </ScrollView>
-          {this.state.itemSelected ? (
+          {this.state.post ? (
             <View style={styles.footer}>
-              <TouchableWithoutFeedback>
+              <TouchableWithoutFeedback onPress={() => this.pushPlayer()}>
                 <Icon name={'chevron-up'} size={26} color={'#000'} />
               </TouchableWithoutFeedback>
               <View style={styles.userContainer}>
@@ -166,17 +216,20 @@ export default class AudioListPage extends React.Component {
                   <Text
                     numberOfLines={1}
                     style={{color: '#333333', fontWeight: '500'}}>
-                    {this.state.itemSelected.title}
+                    {this.state.post.title}
                   </Text>
                   <Text style={{color: '#999999', fontWeight: '500'}}>
                     {this.state.user.name}
                   </Text>
                 </View>
               </View>
-              <TouchableWithoutFeedback>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  Global.player.pause();
+                }}>
                 <Icon
                   name={
-                    this.state.state === 'playing'
+                    this.state.state === Player.PlayPlaying
                       ? 'pause-circle'
                       : 'play-circle'
                   }
