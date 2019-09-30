@@ -24,7 +24,6 @@ export default class AudioListPage extends React.Component {
     super(props);
     this.state = {
       user: null,
-      album: null,
       post: null,
       dataSource: [],
 
@@ -103,7 +102,6 @@ export default class AudioListPage extends React.Component {
     this.props.navigation.navigate('Player', {
       user: this.state.user,
       post: this.state.post,
-      album: this.state.album,
       state: this.state.state,
       isLoading: this.state.isLoading,
       parentPage: this,
@@ -221,7 +219,7 @@ export default class AudioListPage extends React.Component {
                 <View style={{width: 38, height: 38}}>
                   <Image
                     source={{
-                      uri: Global.userAvatarUrl(this.state.user),
+                      uri: Global.postIconUrl(this.state.user, this.state.post),
                     }}
                     style={[styles.avatar, styles.absolute, styles.avatar2]}
                   />
@@ -250,7 +248,7 @@ export default class AudioListPage extends React.Component {
                     {this.state.post.title}
                   </Text>
                   <Text style={{color: '#999999', fontWeight: '500'}}>
-                    {this.state.user.name}
+                    {this.state.post.album}
                   </Text>
                 </View>
               </View>

@@ -22,7 +22,6 @@ export default class PlayerPage extends React.Component {
     this.parentPage = this.props.navigation.getParam('parentPage');
     this.state = {
       user: this.props.navigation.getParam('user'),
-      album: this.props.navigation.getParam('album'),
       post: this.props.navigation.getParam('post'),
 
       state: this.props.navigation.getParam('state'),
@@ -76,7 +75,7 @@ export default class PlayerPage extends React.Component {
             end={{x: 1, y: 0}}
             style={styles.separator}
           />
-          <Text style={styles.description}>{this.state.post.title}</Text>
+          <Text style={styles.description}>{this.state.post.description}</Text>
           <View style={styles.userInfo}>
             <Image
               source={{
@@ -84,7 +83,7 @@ export default class PlayerPage extends React.Component {
               }}
               style={styles.avatar}
             />
-            <Text style={styles.name}>{this.state.user.name}</Text>
+            <Text style={styles.name}>{this.state.post.album}</Text>
           </View>
           <View style={styles.progress}>
             <Text style={styles.audioTime}>
@@ -232,10 +231,12 @@ const styles = StyleSheet.create({
   },
   slider: {
     flex: 1,
-    marginHorizontal: 14,
+    marginHorizontal: 6,
   },
   audioTime: {
     color: '#666666',
+    textAlign: 'center',
+    width: 48,
   },
   control: {
     flexDirection: 'row',
