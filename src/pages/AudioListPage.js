@@ -48,7 +48,12 @@ export default class AudioListPage extends React.Component {
       this.setState({state: state});
       if (state === Player.PlayEnd) {
         this.setState({isLoading: true});
-        this.playNext();
+        this.playNext((post, error) => {
+          if (error) {
+            alert('播放完毕:-D');
+            this.setState({isLoading: false});
+          }
+        });
       } else if (state === Player.PlayPlaying) {
         this.setState({isLoading: false});
       } else if (state === Player.PlayError) {

@@ -31,6 +31,7 @@ export default class PlayerPage extends React.Component {
 
       isLoading: this.props.navigation.getParam('isLoading'),
     };
+    this.isSliding = false;
   }
 
   componentDidMount() {
@@ -40,6 +41,7 @@ export default class PlayerPage extends React.Component {
         const posts = this.state.user.posts.data;
         const index = posts.indexOf(this.state.post);
         if (index + 1 === posts.length) {
+          alert('播放完毕:-D');
           return;
         }
         this.setState({isLoading: true, post: posts[index + 1]});
@@ -50,7 +52,9 @@ export default class PlayerPage extends React.Component {
       }
     });
     Global.player.addEventListener(Player.EventTime, seconds => {
-      this.setState({seconds: seconds, duration: Global.player.duration});
+      if (!this.isSliding) {
+        this.setState({seconds: seconds, duration: Global.player.duration});
+      }
     });
   }
 
@@ -94,7 +98,9 @@ export default class PlayerPage extends React.Component {
               minimumTrackTintColor={Global.themeColor}
               maximumTrackTintColor={'#EEEEEE'}
               thumbImage={slider}
-              onValueChange={value => {
+              onSlidingStart={() => (this.isSliding = true)}
+              onSlidingComplete={value => {
+                this.isSliding = false;
                 Global.player.jumpToTime(value);
               }}
             />
@@ -115,7 +121,10 @@ export default class PlayerPage extends React.Component {
               onPress={() => {
                 this.setState({isLoading: true});
                 this.parentPage.playLast((post, error) => {
-                  if (!error) {
+                  if (error) {
+                    alert(error.message);
+                    this.setState({isLoading: false});
+                  } else {
                     this.setState({post: post});
                   }
                 });
@@ -140,7 +149,7 @@ export default class PlayerPage extends React.Component {
                   size={80}
                   thickness={6}
                   direction={'clockwise'}
-                  style={[styles.absolute, styles.loadView]}
+                  style={styles.absolute}
                 />
               ) : null}
             </View>
@@ -148,7 +157,10 @@ export default class PlayerPage extends React.Component {
               onPress={() => {
                 this.setState({isLoading: true});
                 this.parentPage.playNext((post, error) => {
-                  if (!error) {
+                  if (error) {
+                    alert(error.message);
+                    this.setState({isLoading: false});
+                  } else {
                     this.setState({post: post});
                   }
                 });
