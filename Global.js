@@ -60,7 +60,7 @@ export default class Global {
 
   static postAudioUrl = (user, post) => {
     if (/^(https|http):/.test(post.url)) {
-      return post.icon;
+      return post.url;
     } else {
       return this.pathJoin(
         this.point().postsRepo[post.postsRepo],
