@@ -6,6 +6,7 @@ export default class Player {
 
   static PlayPlaying = 'PlayPlaying';
   static PlayPaused = 'PlayPaused';
+  static PlayHandOff = 'PlayHandOff';
   static PlayEnd = 'PlayEnd';
   static PlayError = 'PlayError';
 
@@ -111,11 +112,10 @@ export default class Player {
   playComplete = success => {
     if (this._sound) {
       if (success) {
-        console.log('successfully finished playing');
+        this.state = Player.PlayEnd;
       } else {
-        console.log('playback failed due to audio decoding errors');
+        this.state = Player.PlayHandOff;
       }
-      this.state = Player.PlayEnd;
       this.time = 0;
       this._sound.setCurrentTime(0);
       this.emitStateEvent();
