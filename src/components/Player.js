@@ -16,11 +16,7 @@ export default class Player {
   /** @type Sound */
   _sound = null;
   _timeout = setInterval(() => {
-    if (
-      this._sound &&
-      this._sound.isLoaded() &&
-      this.state === Player.PlayPlaying
-    ) {
+    if (this._sound && this._sound.isLoaded()) {
       this._sound.getCurrentTime((seconds, isPlaying) => {
         this.time = seconds;
         this.emitTimeEvent();
