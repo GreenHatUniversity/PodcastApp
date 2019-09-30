@@ -14,8 +14,9 @@ import {
 import Icon from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
 import * as Progress from 'react-native-progress';
-import LoadingView from '../Components/LoadingView';
-import Global, {Player} from '../../Global';
+import LoadingView from '../components/LoadingView';
+import Player from '../components/Player';
+import Global from '../../Global';
 import AppApi from '../apis/AppApi';
 
 export default class AudioListPage extends React.Component {

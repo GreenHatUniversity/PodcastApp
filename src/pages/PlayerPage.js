@@ -11,10 +11,10 @@ import {
 import Icon from 'react-native-vector-icons/Feather';
 import Slider from '@react-native-community/slider';
 import LinearGradient from 'react-native-linear-gradient';
-import Global, {Player} from '../../Global';
+import Global from '../../Global';
+import Player from '../components/Player';
 import slider from '../resources/slider.png';
-import LoadingView from '../Components/LoadingView';
-import * as Progress from "react-native-progress";
+import LoadingView from '../components/LoadingView';
 
 export default class PlayerPage extends React.Component {
   constructor(props) {
