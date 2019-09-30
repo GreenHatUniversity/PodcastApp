@@ -59,7 +59,6 @@ export default class Global {
   };
 
   static postAudioUrl = (user, post) => {
-    return 'https://fdfs.xmcdn.com/group66/M08/6D/E5/wKgMdV2JRvmivp3PAPkf0jpK2Wc035.m4a';
     if (/^(https|http):/.test(post.url)) {
       return post.icon;
     } else {
