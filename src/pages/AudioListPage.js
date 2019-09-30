@@ -186,16 +186,36 @@ export default class AudioListPage extends React.Component {
                     />
                     <Text style={styles.name}>{this.state.user.name}</Text>
                   </View>
-                  <Icon
-                    name={
-                      this.state.state === Player.PlayPlaying
-                        ? 'pause-circle'
-                        : 'play-circle'
-                    }
-                    color={Global.themeColor}
-                    size={70}
-                    style={styles.play}
-                  />
+                  <TouchableWithoutFeedback
+                    onPress={() => {
+                      if (
+                        !this.state.post &&
+                        this.state.dataSource.length > 0
+                      ) {
+                        const post = this.state.dataSource[0];
+                        this.setState({post: post, isLoading: true});
+                        this.play(post, (post, error) => {
+                          if (!error) {
+                            this.setState({isLoading: false});
+                          } else {
+                            alert(error.message);
+                          }
+                        });
+                      } else {
+                        Global.player.pause();
+                      }
+                    }}>
+                    <Icon
+                      name={
+                        this.state.state === Player.PlayPlaying
+                          ? 'pause-circle'
+                          : 'play-circle'
+                      }
+                      color={Global.themeColor}
+                      size={70}
+                      style={styles.play}
+                    />
+                  </TouchableWithoutFeedback>
                 </View>
               </View>
             ) : null}
