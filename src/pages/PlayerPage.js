@@ -119,14 +119,15 @@ export default class PlayerPage extends React.Component {
             <TouchableWithoutFeedback
               onPress={() => {
                 this.setState({isLoading: true});
-                this.parentPage.playLast((post, error) => {
-                  if (error) {
-                    alert(error.message);
-                    this.setState({isLoading: false});
-                  } else {
-                    this.setState({post: post});
-                  }
-                });
+                this.parentPage.playLast(
+                  post => this.setState({post: post}),
+                  error => {
+                    if (error) {
+                      alert(error.message);
+                      this.setState({isLoading: false});
+                    }
+                  },
+                );
               }}>
               <Icon name={'skip-back'} size={30} color={Global.themeColor} />
             </TouchableWithoutFeedback>
@@ -155,14 +156,15 @@ export default class PlayerPage extends React.Component {
             <TouchableWithoutFeedback
               onPress={() => {
                 this.setState({isLoading: true});
-                this.parentPage.playNext((post, error) => {
-                  if (error) {
-                    alert(error.message);
-                    this.setState({isLoading: false});
-                  } else {
-                    this.setState({post: post});
-                  }
-                });
+                this.parentPage.playNext(
+                  post => this.setState({post: post}),
+                  error => {
+                    if (error) {
+                      alert(error.message);
+                      this.setState({isLoading: false});
+                    }
+                  },
+                );
               }}>
               <Icon name={'skip-forward'} size={30} color={Global.themeColor} />
             </TouchableWithoutFeedback>

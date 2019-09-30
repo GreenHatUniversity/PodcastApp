@@ -47,12 +47,15 @@ export default class AudioListPage extends React.Component {
       this.setState({state: state});
       if (state === Player.PlayEnd) {
         this.setState({isLoading: true});
-        this.playNext((post, error) => {
-          if (error) {
-            alert('播放完毕:-D');
-            this.setState({isLoading: false});
-          }
-        });
+        this.playNext(
+          post => this.setState({post: post}),
+          error => {
+            if (error) {
+              alert('播放完毕:-D');
+              this.setState({isLoading: false});
+            }
+          },
+        );
       } else if (state === Player.PlayPlaying) {
         this.setState({isLoading: false});
       } else if (state === Player.PlayError) {
@@ -70,30 +73,32 @@ export default class AudioListPage extends React.Component {
     Global.player
       .play(Global.postAudioUrl(this.state.user, post), error => {
         if (!error && cb) {
-          cb(post);
+          cb(error);
         }
       })
       .then();
   }
 
-  playLast(cb) {
+  playLast(pre, cb) {
     const index = this.state.dataSource.indexOf(this.state.post);
     if (index === 0) {
-      cb(null, {message: 'not last'});
+      cb({message: 'not last'});
       return;
     }
     const post = this.state.dataSource[index - 1];
+    pre(post);
     this.setState({post: post});
     this.play(post, cb);
   }
 
-  playNext(cb) {
+  playNext(pre, cb) {
     const index = this.state.dataSource.indexOf(this.state.post);
     if (index + 1 === this.state.dataSource.length) {
-      cb(null, {message: 'not next'});
+      cb({message: 'not next'});
       return;
     }
     const post = this.state.dataSource[index + 1];
+    pre(post);
     this.setState({post: post});
     this.play(post, cb);
   }
