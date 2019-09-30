@@ -836,6 +836,15 @@
     "@types/istanbul-reports" "^1.1.1"
     "@types/yargs" "^13.0.0"
 
+"@react-native-community/art@^1.0.1":
+  version "1.0.1"
+  resolved "http://r.cnpmjs.org/@react-native-community/art/download/@react-native-community/art-1.0.1.tgz#3066b3177c06453547b7199d532309b91d090c3b"
+  integrity sha1-MGazF3wGRTVHtxmdUyMJuR0JDDs=
+  dependencies:
+    art "^0.10.3"
+    invariant "^2.2.4"
+    prop-types "^15.7.2"
+
 "@react-native-community/cli-platform-android@^2.6.0", "@react-native-community/cli-platform-android@^2.9.0":
   version "2.9.0"
   resolved "http://r.cnpmjs.org/@react-native-community/cli-platform-android/download/@react-native-community/cli-platform-android-2.9.0.tgz#28831e61ce565a2c7d1905852fce1eecfd33cb5e"
@@ -1302,7 +1311,7 @@ array-unique@^0.3.2:
   resolved "http://r.cnpmjs.org/array-unique/download/array-unique-0.3.2.tgz#a894b75d4bc4f6cd679ef3244a9fd8f46ae2d428"
   integrity sha1-qJS3XUvE9s1nnvMkSp/Y9Gri1Cg=
 
-art@^0.10.0:
+art@^0.10.0, art@^0.10.3:
   version "0.10.3"
   resolved "http://r.cnpmjs.org/art/download/art-0.10.3.tgz#b01d84a968ccce6208df55a733838c96caeeaea2"
   integrity sha1-sB2EqWjMzmII31WnM4OMlsrurqI=

@@ -14,7 +14,7 @@ import {
 import Icon from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
 import * as Progress from 'react-native-progress';
-
+import LoadingView from '../Components/LoadingView';
 import Global, {Player} from '../../Global';
 import AppApi from '../apis/AppApi';
 
@@ -99,6 +99,7 @@ export default class AudioListPage extends React.Component {
       post: this.state.post,
       album: this.state.album,
       state: this.state.state,
+      isLoading: this.state.isLoading,
       parentPage: this,
     });
   }
@@ -211,20 +212,19 @@ export default class AudioListPage extends React.Component {
                 <Icon name={'chevron-up'} size={26} color={'#000'} />
               </TouchableWithoutFeedback>
               <View style={styles.userContainer}>
-                <View style={{width: 38}}>
+                <View style={{width: 38, height: 38}}>
                   <Image
                     source={{
                       uri: Global.userAvatarUrl(this.state.user),
                     }}
-                    style={[styles.avatar, styles.position, styles.avatar2]}
+                    style={[styles.avatar, styles.absolute, styles.avatar2]}
                   />
                   {this.state.isLoading ? (
-                    <Progress.CircleSnail
+                    <LoadingView
                       color={Global.themeColor}
-                      size={44}
-                      // 这个通过改源码添加的属性
-                      offset={{top: 0, left: 0}}
-                      style={styles.position}
+                      size={38}
+                      direction={'clockwise'}
+                      style={styles.absolute}
                     />
                   ) : (
                     <Progress.Circle
@@ -233,7 +233,7 @@ export default class AudioListPage extends React.Component {
                       borderColor={'#E7F7F7'}
                       progress={this.state.seconds / this.state.post.duration}
                       size={38}
-                      style={styles.position}
+                      style={styles.absolute}
                     />
                   )}
                 </View>
@@ -299,10 +299,10 @@ const styles = StyleSheet.create({
     borderColor: Global.themeColor,
   },
   avatar2: {
-    borderWidth: 5,
+    borderWidth: 3,
     borderColor: '#E7F7F7',
   },
-  position: {
+  absolute: {
     position: 'absolute',
     top: 0,
     left: 0,

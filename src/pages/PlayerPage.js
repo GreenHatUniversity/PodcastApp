@@ -13,6 +13,8 @@ import Slider from '@react-native-community/slider';
 import LinearGradient from 'react-native-linear-gradient';
 import Global, {Player} from '../../Global';
 import slider from '../resources/slider.png';
+import LoadingView from '../Components/LoadingView';
+import * as Progress from "react-native-progress";
 
 export default class PlayerPage extends React.Component {
   constructor(props) {
@@ -27,7 +29,7 @@ export default class PlayerPage extends React.Component {
       seconds: 0,
       duration: 0,
 
-      isLoading: false,
+      isLoading: this.props.navigation.getParam('isLoading'),
     };
   }
 
@@ -110,34 +112,47 @@ export default class PlayerPage extends React.Component {
               />
             </TouchableWithoutFeedback>
             <TouchableWithoutFeedback
-              onPress={() =>
+              onPress={() => {
+                this.setState({isLoading: true});
                 this.parentPage.playLast((post, error) => {
                   if (!error) {
                     this.setState({post: post});
                   }
-                })
-              }>
+                });
+              }}>
               <Icon name={'skip-back'} size={30} color={Global.themeColor} />
             </TouchableWithoutFeedback>
-            <TouchableWithoutFeedback onPress={() => Global.player.pause()}>
-              <Icon
-                name={
-                  this.state.state === Player.PlayPlaying
-                    ? 'pause-circle'
-                    : 'play-circle'
-                }
-                size={80}
-                color={Global.themeColor}
-              />
-            </TouchableWithoutFeedback>
+            <View style={{width: 80, height: 80}}>
+              <TouchableWithoutFeedback onPress={() => Global.player.pause()}>
+                <Icon
+                  name={
+                    this.state.state === Player.PlayPlaying
+                      ? 'pause-circle'
+                      : 'play-circle'
+                  }
+                  size={80}
+                  color={this.state.isLoading ? '#E7F7F7' : Global.themeColor}
+                />
+              </TouchableWithoutFeedback>
+              {this.state.isLoading ? (
+                <LoadingView
+                  color={Global.themeColor}
+                  size={80}
+                  thickness={6}
+                  direction={'clockwise'}
+                  style={[styles.absolute, styles.loadView]}
+                />
+              ) : null}
+            </View>
             <TouchableWithoutFeedback
-              onPress={() =>
+              onPress={() => {
+                this.setState({isLoading: true});
                 this.parentPage.playNext((post, error) => {
                   if (!error) {
                     this.setState({post: post});
                   }
-                })
-              }>
+                });
+              }}>
               <Icon name={'skip-forward'} size={30} color={Global.themeColor} />
             </TouchableWithoutFeedback>
             <TouchableWithoutFeedback
@@ -214,5 +229,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  absolute: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
   },
 });
